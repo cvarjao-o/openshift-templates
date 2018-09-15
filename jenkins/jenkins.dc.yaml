@@ -1,9 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  creationTimestamp: null
   name: jenkins
-  namespace: csnr-devops-lab-tools
 objects:
 - apiVersion: v1
   kind: ImageStream
