@@ -113,7 +113,7 @@ objects:
           - name: ENV_ID
             value: ${ENV_ID}
           image: ' '
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
             httpGet:
