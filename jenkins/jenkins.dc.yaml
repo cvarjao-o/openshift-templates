@@ -413,12 +413,12 @@ parameters:
   displayName: MASTER_CPU_REQUEST
   name: MASTER_CPU_REQUEST
   required: true
-  value: '300m'
+  value: '1'
 - description: MASTER_CPU_LIMIT
   displayName: MASTER_CPU_LIMIT
   name: MASTER_CPU_LIMIT
   required: true
-  value: '500m'
+  value: '2'
 - description: ROUTE_PATH
   displayName: ROUTE_PATH
   name: ROUTE_PATH
