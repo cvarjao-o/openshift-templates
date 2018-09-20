@@ -424,12 +424,12 @@ parameters:
   displayName: SLAVE_CPU_REQUEST
   name: SLAVE_CPU_REQUEST
   required: true
-  value: '200'
+  value: '200m'
 - description: SLAVE_CPU_LIMIT
   displayName: SLAVE_CPU_LIMIT
   name: SLAVE_CPU_LIMIT
   required: true
-  value: '300'
+  value: '300m'
 - description: ROUTE_PATH
   displayName: ROUTE_PATH
   name: ROUTE_PATH
