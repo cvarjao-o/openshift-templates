@@ -16,7 +16,7 @@ objects:
     - name: v1
       from:
         kind: ImageStreamImage
-        name: jenkins-atomic@sha256:c7cbf7704ce0b8b53e3549c42aa636566eca4b4da179734b6794f890a9838a3d
+        name: jenkins-pipeline-basic@sha256:e6222effe59b94daec5dd3fcc3a48637633a215133a2ab10c88fb419655a559f
       importPolicy: {}
 - apiVersion: v1
   kind: ImageStream
