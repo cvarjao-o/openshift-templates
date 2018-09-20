@@ -47,7 +47,7 @@ objects:
         memory: 1Gi
     runPolicy: SerialLatestOnly
     source:
-      contextDir: base
+      contextDir: ${CONTEXT_DIR}
       type: Binary
     strategy:
       dockerStrategy:
@@ -76,3 +76,7 @@ parameters:
   name: VERSION
   required: true
   value: v1.0.0
+- description: contextDir
+  displayName: contextDir
+  name: CONTEXT_DIR
+  value: "base"
