@@ -408,7 +408,8 @@ parameters:
 - description: ROUTE_HOST
   displayName: ROUTE_HOST
   name: ROUTE_HOST
-  required: true
+  required: false
+  value: ""
 - description: MASTER_CPU_REQUEST
   displayName: MASTER_CPU_REQUEST
   name: MASTER_CPU_REQUEST
