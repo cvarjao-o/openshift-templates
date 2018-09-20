@@ -405,11 +405,11 @@ parameters:
   name: GITHUB_USERNAME
   required: true
   value: cvarjao
+#It must be known as it is needed for setting Jenkins root URL
 - description: ROUTE_HOST
   displayName: ROUTE_HOST
   name: ROUTE_HOST
-  required: false
-  value: ""
+  required: true
 - description: MASTER_CPU_REQUEST
   displayName: MASTER_CPU_REQUEST
   name: MASTER_CPU_REQUEST
