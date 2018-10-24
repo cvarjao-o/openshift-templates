@@ -16,7 +16,7 @@ objects:
     - name: v1
       from:
         kind: ImageStreamImage
-        name: ${baseImageStreamImage}
+        name: ${BASE_IMAGESTREAMIMAGE}
       importPolicy: {}
 - apiVersion: v1
   kind: ImageStream
