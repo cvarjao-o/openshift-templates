@@ -80,6 +80,7 @@ parameters:
   displayName: contextDir
   name: CONTEXT_DIR
   value: "base"
-- description: baseImageStreamImage
-  displayName: baseImageStreamImage
+- description: BASE_IMAGESTREAMIMAGE
+  displayName: BASE_IMAGESTREAMIMAGE
+  name: BASE_IMAGESTREAMIMAGE
   value: "jenkins-pipeline-basic@sha256:e6222effe59b94daec5dd3fcc3a48637633a215133a2ab10c88fb419655a559f"
