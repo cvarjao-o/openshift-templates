@@ -1,0 +1,73 @@
+apiVersion: v1
+objects:
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewBuild
+      openshift.io/image.dockerRepositoryCheck: 2019-12-20T22:32:49Z
+    creationTimestamp: 2019-12-20T22:32:49Z
+    generation: 2
+    labels:
+      build: httpd
+    name: httpd-24-rhel7
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - annotations:
+        openshift.io/imported-from: registry.access.redhat.com/rhscl/httpd-24-rhel7:2.4
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/rhscl/httpd-24-rhel7:2.4
+      generation: 2
+      importPolicy: {}
+      name: "2.4"
+      referencePolicy:
+        type: Local
+  status: {}
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewBuild
+    creationTimestamp: 2019-12-20T22:33:55Z
+    labels:
+      build: httpd
+    name: httpd
+  spec:
+    failedBuildsHistoryLimit: 5
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: httpd:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      dockerfile: |-
+        FROM registry.access.redhat.com/rhscl/httpd-24-rhel7:2.4
+        USER 0
+        RUN yum install -y httpd24-mod_ldap && \
+            sed -i -e 's/#LoadModule log_debug_module/LoadModule log_debug_module/' "${HTTPD_MAIN_CONF_MODULES_D_PATH}/00-optional.conf"
+        USER 1001
+      type: Dockerfile
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: httpd-24-rhel7:2.4
+      type: Docker
+    successfulBuildsHistoryLimit: 5
+    triggers:
+    - imageChange:
+        lastTriggeredImageID: registry.access.redhat.com/rhscl/httpd-24-rhel7@sha256:023b09c94aa64906fa2c821d3a6cc1cd36082abd478f80016f81c30ee12d7be0
+      type: ImageChange
+    - type: ConfigChange
+  status:
+    lastVersion: 0
+kind: Template
+metadata:
+  resourceVersion: ""
+  selfLink: ""

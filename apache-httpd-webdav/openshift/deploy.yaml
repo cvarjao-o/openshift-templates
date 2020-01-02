@@ -1,0 +1,204 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: 'httpd-webdav-deploy'
+objects:
+- apiVersion: v1
+  data:
+    ssl.conf: '# empty'
+    webdav.conf: |-
+      LDAPVerifyServerCert Off
+      <AuthnProviderAlias ldap ldap-idir>
+            AuthLDAPUrl "ldaps://idir.bcgov/ou=bcgov,dc=idir,dc=bcgov?userPrincipalName,sAMAccountName,mail,displayName,bcgovGUID?sub?(objectClass=user)"
+            AuthLDAPInitialBindAsUser on
+            AuthLDAPSearchAsUser  on
+            LDAPReferrals Off
+            AuthLDAPBindAuthoritative On
+            #AuthLDAPRemoteUserAttribute userPrincipalName
+      </AuthnProviderAlias>
+
+      <IfModule mod_dav.c>
+          LimitXMLRequestBody 131072
+          DavLockDB /var/http-dav/DavLock
+          Alias /dav "/var/www/dav"
+          <Directory /var/www/dav>
+              #LogLevel trace8
+              #LogMessage "REMOTE_USER='%{REMOTE_USER}'" hook=check_authz
+              #LogMessage "AUTHENTICATE_userPrincipalName='%{env:AUTHENTICATE_userPrincipalName}'" hook=all
+              #LogMessage "AUTHENTICATE_sAMAccountName='%{env:AUTHENTICATE_sAMAccountName}'" hook=all
+              #LogMessage "AUTHORIZE_userPrincipalName='%{env:AUTHORIZE_userPrincipalName}'" hook=all
+              #LogMessage "AUTHORIZE_sAMAccountName='%{env:AUTHORIZE_sAMAccountName}'" hook=all
+
+              Dav On
+              Options +Indexes
+              IndexOptions FancyIndexing
+              AddDefaultCharset UTF-8
+              AuthType Basic
+              AuthName "IDIR"
+              AuthBasicProvider ldap-idir
+              #Require ldap-user "Clecio.Varjao@gov.bc.ca"
+              #Require ldap-attribute userPrincipalName="Clecio.Varjao@gov.bc.ca"
+              #Require valid-user
+              Require expr "%{REMOTE_USER} == 'clecio.varjao@gov.bc.ca'"
+          </Directory>
+      </IfModule>
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: null
+    name: httpd-conf
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    annotations: {}
+    creationTimestamp: null
+    generation: 4
+    labels:
+      app: httpd
+    name: httpd
+  spec:
+    lookupPolicy:
+      local: false
+    tags: {}
+  status: {}
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    annotations: {}
+    creationTimestamp: null
+    generation: 21
+    labels:
+      app: httpd
+    name: httpd
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      app: httpd
+      deploymentconfig: httpd
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        annotations: {}
+        creationTimestamp: null
+        labels:
+          app: httpd
+          deploymentconfig: httpd
+      spec:
+        containers:
+        - image: ' '
+          imagePullPolicy: IfNotPresent
+          name: httpd
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 8443
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/http-dav
+            name: volume-97xr8
+          - mountPath: /etc/httpd/conf.d
+            name: volume-c2npn
+          - mountPath: /var/www/dav
+            name: volume-rv2pp
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - command:
+          - sh
+          - -c
+          - cp -RL /etc/httpd/conf.d/* /etc/httpd/conf.d.new/ && cp -RL
+            /etc/httpd/conf.d.extra/* /etc/httpd/conf.d.new/
+          image: ' '
+          imagePullPolicy: IfNotPresent
+          name: init
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/httpd/conf.d.extra
+            name: volume-gkxxv
+          - mountPath: /etc/httpd/conf.d.new
+            name: volume-c2npn
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - emptyDir: {}
+          name: volume-97xr8
+        - configMap:
+            defaultMode: 420
+            name: httpd-conf
+          name: volume-gkxxv
+        - emptyDir: {}
+          name: volume-c2npn
+        - emptyDir: {}
+          name: volume-rv2pp
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - httpd
+        - init
+        from:
+          kind: ImageStreamTag
+          name: httpd:latest
+      type: ImageChange
+    - type: ConfigChange
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: 2019-12-20T21:06:53Z
+    labels:
+      app: httpd
+    name: httpd
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: 8443-tcp
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      app: httpd
+      deploymentconfig: httpd
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    annotations: {}
+    creationTimestamp: null
+    labels:
+      app: httpd
+    name: httpd
+  spec:
+    host: ''
+    port:
+      targetPort: 8080-tcp
+    to:
+      kind: Service
+      name: httpd
+      weight: 100
+    wildcardPolicy: None
+  status: {}
