@@ -1,0 +1,105 @@
+kind: Template
+apiVersion: template.openshift.io/v1
+labels:
+  chart: kibana
+  heritage: Tiller
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: kibana
+      release: release-name
+    name: release-name-kibana
+    namespace: csnr-devops-lab-deploy
+  spec:
+    ports:
+    - name: http
+      port: 5601
+      protocol: TCP
+      targetPort: 5601
+    selector:
+      app: kibana
+      release: release-name
+    type: ClusterIP
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: kibana
+      release: release-name
+    name: release-name-kibana
+    namespace: csnr-devops-lab-deploy
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: kibana
+        release: release-name
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        annotations: null
+        labels:
+          app: kibana
+          release: release-name
+      spec:
+        containers:
+        - env:
+          - name: ELASTICSEARCH_HOSTS
+            value: http://elasticsearch-master:9200
+          - name: SERVER_HOST
+            value: 0.0.0.0
+          image: docker.elastic.co/kibana/kibana:7.4.1
+          imagePullPolicy: IfNotPresent
+          name: kibana
+          ports:
+          - containerPort: 5601
+          readinessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - |
+                #!/usr/bin/env bash -e
+                http () {
+                    local path="${1}"
+                    set -- -XGET -s --fail
+
+                    if [ -n "${ELASTICSEARCH_USERNAME}" ] && [ -n "${ELASTICSEARCH_PASSWORD}" ]; then
+                      set -- "$@" -u "${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}"
+                    fi
+
+                    STATUS=$(curl --output /dev/null --write-out "%{http_code}" -k "$@" "http://localhost:5601${path}")
+                    if [[ "${STATUS}" -eq 200 ]]; then
+                      exit 0
+                    fi
+
+                    echo "Error: Got HTTP code ${STATUS} but expected a 200"
+                    exit 1
+                }
+
+                http "/app/kibana"
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 3
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 500Mi
+#          securityContext:
+#            capabilities:
+#              drop:
+#              - ALL
+#            runAsNonRoot: true
+#            runAsUser: 1000
+          volumeMounts: null
+#        securityContext:
+#          fsGroup: 1000
+        volumes: null
