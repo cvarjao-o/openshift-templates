@@ -24,9 +24,11 @@ oc process -f elasticsearch-secrets.yaml  -p NAME=elastic-credentials | oc creat
 helm repo add elastic https://helm.elastic.co
 helm fetch elastic/elasticsearch --version=7.4.1
 helm template -f elasticsearch-values.yaml elasticsearch-7.4.1.tgz | oc create -f - --dry-run -o yaml > elasticsearch-deployment.yaml
+```
+
+## Deployment
+```
 oc process -f elasticsearch-deployment.yaml | oc create -f -
-
-
 ```
 
 ## Test
