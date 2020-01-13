@@ -1,11 +1,13 @@
 # Elastic Search
 ## Generate Internal Certificates
+For this step you are going to need 2 open terminals (Terminal 1, Terminal 2)
 ```
+# From Terminal 1
 oc run cert --image=docker.elastic.co/elasticsearch/elasticsearch:7.4.1 --command -it --rm --restart=Never -- bash
 
+# From Terminal 2
 oc rsh cert elasticsearch-certutil ca --out /tmp/elastic-stack-ca.p12 --pass ''
 oc rsh cert elasticsearch-certutil cert --name elasticsearch-master --dns elasticsearch-master --ca /tmp/elastic-stack-ca.p12 --pass '' --ca-pass '' --out /tmp/elastic-certificates.p12
-
 oc cp cert:/tmp/elastic-stack-ca.p12 ./
 oc cp cert:/tmp/elastic-certificates.p12 ./
 openssl pkcs12 -nodes -passin pass:'' -in elastic-certificates.p12 -out elastic-certificate.pem
@@ -17,6 +19,7 @@ oc create secret generic elastic-certificates --from-file=elastic-certificates.p
 oc create secret generic elastic-certificate-pem --from-file=elastic-certificate.pem
 oc process -f elasticsearch-secrets.yaml  -p NAME=elastic-credentials | oc create -f -
 
+# you may now fully exit/close from both terminals
 ```
 
 ## Create OpenShift Template
@@ -52,9 +55,8 @@ curl -k -u "${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}" https://localho
 # LOGSTASH
 ```
 helm fetch elastic/logstash --version=7.4.1
-```
-
 oc run logstash --image=docker.elastic.co/logstash/logstash:7.4.1 -it --rm --restart=Never --command -- bash
+```
 
 # TODO
 - auto-generate certificate private key/password instead of no password (empty).
